@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <v-row class="mt-3">
     <v-col v-for="(item, index) in trade_history_list" :key="index" cols="12">
       <v-card rounded="xl">
         <v-card-title>
