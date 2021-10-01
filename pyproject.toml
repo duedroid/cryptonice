@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "cryptonice"
+version = "0.1.0"
+description = ""
+authors = ["Thossapol Prompetch <thossapoldew@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.68.1"
+pydantic = "^1.8.2"
+python-binance = "^1.0.15"
+uvicorn = {extras = ["standard"], version = "^0.15.0"}
+aioredis = {extras = ["hiredis"], version = "^2.0.0"}
+aiosqlite = "^0.17.0"
+alembic = "^1.7.3"
+SQLAlchemy = "^1.4.25"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-multipart = "^0.0.5"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
