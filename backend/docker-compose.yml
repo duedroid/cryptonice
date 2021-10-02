@@ -1,12 +1,29 @@
 version: '3'
 
 services:
-  app:
-    container_name: app
+  api_server:
+    container_name: api_server
     build: .
     restart: always
     ports:
       - 8000:8000
     depends_on:
       - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+    command: gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+  
+  stream_server:
+    container_name: stream_server
+    build: .
+    restart: always
+    ports:
+      - 9000:9000
+    depends_on:
+      - redis
+    command: uvicorn main:app --host 0.0.0.0 --port 9000
+  
+  redis:
+    container_name: redis
+    image: redis:6-alpine
+    restart: always
+    expose:
+      - 6379:6379
