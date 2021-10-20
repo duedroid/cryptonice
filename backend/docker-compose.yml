@@ -7,19 +7,21 @@ services:
     restart: always
     ports:
       - 8000:8000
+    volumes:
+      - ./app/data/:/app/data/
     depends_on:
       - redis
     command: gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
   
-  stream_server:
-    container_name: stream_server
-    build: .
-    restart: always
-    ports:
-      - 9000:9000
-    depends_on:
-      - redis
-    command: uvicorn main:app --host 0.0.0.0 --port 9000
+  # stream_server:
+  #   container_name: stream_server
+  #   build: .
+  #   restart: always
+  #   ports:
+  #     - 9000:9000
+  #   depends_on:
+  #     - redis
+  #   command: uvicorn main:app --host 0.0.0.0 --port 9000
   
   redis:
     container_name: redis

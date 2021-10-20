@@ -1,31 +1,50 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+import ujson
+
+from aioredis import Redis
+from fastapi import APIRouter, BackgroundTasks, Depends
 
 from core.auth import get_current_user
-from core.security import get_password_hash
-from db.session import get_session
+from core.exchange import Exchange
+from core.redis import redis_dependency
 from models.user import User
-from schemas.user import UserLogin
 
 
 router = APIRouter()
 
 
-@router.post('/')
-async def create_user(data: UserLogin, db: AsyncSession = Depends(get_session)):
-    query = await db.execute(select(User).where(User.username == data.username))
-    if query.scalar():
-        raise HTTPException(400, 'User is exists')
+async def get_balances(api_key: str, api_secret: str):
+    user_exchange = Exchange(api_key, api_secret)
+    total_balance = user_exchange.get_balance()
+    balances = []
+    for balance in total_balance['balances']:
+        amount = float(balance['free']) + float(balance['locked'])
+        if amount == 0:
+            continue
 
-    user = User(username=data.username, password=get_password_hash(data.password))
-    db.add(user)
-    await db.commit()
-    return {}
+        asset = balance['asset']
+        balances.append({
+            'asset': asset,
+            'amount': amount
+        })
+
+    return balances
 
 
-@router.get('/profile')
-async def get_profile(
-    current_user: User = Depends(get_current_user)
+@router.get('/balance')
+async def get_balance(
+    background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
+    redis: Redis = Depends(redis_dependency),
 ):
-    return {'username': current_user.username}
+    key = f'balance_{current_user.id}'
+    response = await redis.get(key)
+    if response is None:
+        balances = await get_balances(current_user.api_key, current_user.api_secret)
+        response = {
+            'bridge': current_user.bridge,
+            'balances': balances
+        }
+        background_tasks.add_task(redis.set, key=key, value=ujson.dumps(response), ttl=10)
+        return response
+    
+    return ujson.loads(response)

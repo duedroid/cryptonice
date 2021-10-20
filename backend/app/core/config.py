@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     STREAM_SERVER_TOKEN: str
     
     REDIS_URL: str
-    DATABASE_URL: str = 'sqlite+aiosqlite:///./data/db.sqlite3'
+    DATABASE_URL: str = 'postgresql+asyncpg://midasbot:midasbot@localhost:5432/midasbot'
     
     
     class Config:
